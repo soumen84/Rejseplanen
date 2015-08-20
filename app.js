@@ -2,8 +2,7 @@ var express = require("express"),
     app = express(),
     csvWriter = require('csv-write-stream'),
     fs = require("fs"),
-    exec = require("child_process").exec,
-    request = require('request');
+    exec = require("child_process").exec;
 
 function writeCSVFile() {
     console.log("in get");
