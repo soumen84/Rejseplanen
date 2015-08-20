@@ -4,22 +4,21 @@ var express = require("express"),
     fs = require("fs"),
     exec = require("child_process").exec;
 
-function writeCSVFile() {
-    console.log("in get");
+function writeCSVFile(dataUrl, dataIndex) {
     var data = [],
         headers = ['holdepladsnr', 'navn', 'type nr', 'type navn', 'type ikon', 'etrs89koordinat øst', 'etrs89koordinat nord', 'wgs84koordinat bredde', 'wgs84koordinat længde', 'rejseplanen herfra', 'rejseplanen hertil', 'rejseplanen herframobil', 'rejseplanen hertilmobil', 'rejseplanen afgangstavle', 'rejseplanen ankomsttavle'],
-        dataUrl = "http://geo.oiorest.dk/holdepladser.json?holdepladstype=4";
-    fields = ['holdepladsnr', 'navn', 'type.nr', 'type.navn', 'type.ikon', 'etrs89koordinat.øst', 'etrs89koordinat.nord', 'wgs84koordinat.bredde', 'wgs84koordinat.længde', 'rejseplanen.herfra', 'rejseplanen.hertil', 'rejseplanen.herframobil', 'rejseplanen.hertilmobil', 'rejseplanen.afgangstavle', 'rejseplanen.ankomsttavle'];
+        fields = ['holdepladsnr', 'navn', 'type.nr', 'type.navn', 'type.ikon', 'etrs89koordinat.øst', 'etrs89koordinat.nord', 'wgs84koordinat.bredde', 'wgs84koordinat.længde', 'rejseplanen.herfra', 'rejseplanen.hertil', 'rejseplanen.herframobil', 'rejseplanen.hertilmobil', 'rejseplanen.afgangstavle', 'rejseplanen.ankomsttavle'];
+    dataIndex = dataIndex + 1;
     exec('curl ' + dataUrl, {
         maxBuffer: 1024 * 10240000
     }, function(error, stdout, stderror) {
         if (!error) {
-            console.log("success");
+            console.log("success", dataIndex);
             body = JSON.parse(stdout);
             var writer = csvWriter({
                 headers: headers
             });
-            writer.pipe(fs.createWriteStream('rejseplanen.csv'));
+            writer.pipe(fs.createWriteStream('rejseplanen_' + dataIndex + '.csv'));
             body.forEach(function(item, itemIndex) {
                 data = [];
                 fields.forEach(function(fieldName, index) {
@@ -38,5 +37,13 @@ function writeCSVFile() {
         }
     })
 }
-writeCSVFile();
+
+function loadData() {
+    var dataUrls = ['http://geo.oiorest.dk/holdepladser.json?holdepladstype=1', 'http://geo.oiorest.dk/holdepladser.json?holdepladstype=2', 'http://geo.oiorest.dk/holdepladser.json?holdepladstype=3', 'http://geo.oiorest.dk/holdepladser.json?holdepladstype=4'];
+    dataUrls.forEach(function(url, index) {
+        console.log("loading data from", url);
+        writeCSVFile(url, index);
+    })
+}
+loadData();
 app.listen(process.env.PORT || 3000);
